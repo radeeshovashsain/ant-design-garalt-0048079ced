@@ -4,6 +4,9 @@ import path from 'node:path';
 import createEmotionServer from '@emotion/server/create-instance';
 import type { IApi } from 'dumi';
 
+const siteLayerOrder = '@layer theme, base, global, antd, components, utilities;';
+const siteLayerStyle = `<style>${siteLayerOrder}</style>`;
+
 export const getHash = (str: string, length = 8) =>
   createHash('md5').update(str).digest('hex').slice(0, length);
 
@@ -26,6 +29,14 @@ function extractEmotionStyle(html: string) {
     };
   });
   return styles.filter(Boolean);
+}
+
+function prependSiteLayerOrder(html: string) {
+  if (!html.includes('<head>')) {
+    return html;
+  }
+
+  return html.replace(siteLayerStyle, '').replace('<head>', `<head>${siteLayerStyle}`);
 }
 
 export default async function buildAssetsPlugin(api: IApi) {
@@ -59,6 +70,8 @@ export default async function buildAssetsPlugin(api: IApi) {
       // exclude dynamic route path, to avoid deploy failed by `:id` directory
       .filter((f) => !f.path.includes(':'))
       .map((file) => {
+        file.content = prependSiteLayerOrder(file.content);
+
         // 1. 提取 antd-style 样式
         const styles = extractEmotionStyle(file.content);
 

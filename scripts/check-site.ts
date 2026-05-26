@@ -16,6 +16,8 @@ const components = uniq(
   ),
 ).filter((component) => !component.includes('_util'));
 
+const siteLayerOrder = '@layer theme, base, global, antd, components, utilities;';
+
 describe('site test', () => {
   let server: http.Server | https.Server;
   const portPromise = portfinder.getPortPromise({
@@ -82,7 +84,7 @@ describe('site test', () => {
         }
       };
 
-      return { status: res.status, $, root };
+      return { html, status: res.status, $, root };
     });
     return resp;
   };
@@ -162,6 +164,16 @@ describe('site test', () => {
     const { status, $ } = await render('/components/overview-cn');
     expect(status).toBe(200);
     expect($('h1').text()).toMatch(`组件总览`);
+  });
+
+  it('Site layer order before tailwind browser script', async () => {
+    const { html } = await render('/components/overview-cn');
+    const layerOrderIndex = html.indexOf(siteLayerOrder);
+    const tailwindScriptIndex = html.indexOf('@tailwindcss/browser@4');
+
+    expect(layerOrderIndex).toBeGreaterThanOrEqual(0);
+    expect(tailwindScriptIndex).toBeGreaterThanOrEqual(0);
+    expect(layerOrderIndex).toBeLessThan(tailwindScriptIndex);
   });
 
   it('Resource en', async () => {

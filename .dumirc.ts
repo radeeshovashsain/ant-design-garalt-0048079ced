@@ -9,6 +9,8 @@ import remarkAnchor from './.dumi/remarkAnchor';
 import remarkAntd from './.dumi/remarkAntd';
 import { version } from './package.json';
 
+const siteLayerOrder = '@layer theme, base, global, antd, components, utilities;';
+
 export default defineConfig({
   plugins: ['dumi-plugin-color-chunk'],
 
@@ -132,6 +134,7 @@ export default defineConfig({
       crossorigin: 'anonymous',
     },
   ],
+  styles: [siteLayerOrder],
   headScripts: [
     `
     (function () {
